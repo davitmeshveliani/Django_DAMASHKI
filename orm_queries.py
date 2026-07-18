@@ -13,6 +13,7 @@ def run_homework_tasks():
 
 #######    # 1. CREATE
 
+
     today = timezone.now()
     task = Task.objects.create(
         title="Prepare presentation",
