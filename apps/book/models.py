@@ -19,8 +19,11 @@ class Category(TimeStampedModel):
         return self.name
 
 class Task(TimeStampedModel):
-    title = models.CharField(max_length=100, unique=True, verbose_name="Task Title")
+    title = models.CharField(max_length=100, blank=True, default="", verbose_name="Task Title")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='tasks')
+    description = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, default="New", blank=True, null=True)
+    deadline = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = 'task_manager_task'
@@ -33,7 +36,10 @@ class Task(TimeStampedModel):
 
 class SubTask(TimeStampedModel):
     task = models.ForeignKey(Task, on_delete=models.SET_NULL,null=True,blank=True, related_name='subtasks')
-    title = models.CharField(max_length=100, unique=True, verbose_name="SubTask Title")
+    title = models.CharField(max_length=100, blank=True, default="", verbose_name="Task Title")
+    description = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, default="New", blank=True, null=True)
+    deadline = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = 'task_manager_subtask'
