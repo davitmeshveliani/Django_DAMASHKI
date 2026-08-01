@@ -10,38 +10,48 @@ STATUS_CHOICES = [
 ]
 
 class Category(models.Model):
-    name = models.CharField(max_length=100, verbose_name="Название категории")
+    objects = models.Manager()
+    name = models.CharField(max_length=100, null=True, blank=True, verbose_name="Category Name")
+
+    class Meta:
+        app_label = 'myapp'
+        verbose_name = "Category"
+        verbose_name_plural = "Categories"
 
     def __str__(self):
         return self.name
 
 class Task(models.Model):
-    title = models.CharField(max_length=255, verbose_name="Название задачи")
-    description = models.TextField(null=True, blank=True, verbose_name="Описание")
-    categories = models.ManyToManyField(Category, related_name='tasks', verbose_name="Категории")
-    status = models.CharField(choices=STATUS_CHOICES, max_length=100, default='New', verbose_name='Статус')
-    deadline = models.DateTimeField(null=True, blank=True, verbose_name="Дедлайн")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    objects = models.Manager()
+    title = models.CharField(max_length=255, verbose_name="Task Title")
+    description = models.TextField(null=True, blank=True, verbose_name="Description")
+    categories = models.ManyToManyField(Category, related_name='tasks', verbose_name="Categories")
+    status = models.CharField(choices=STATUS_CHOICES, max_length=100, default='New', verbose_name='Status')
+    deadline = models.DateTimeField(null=True, blank=True, verbose_name="Deadline")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
 
     class Meta:
+        app_label = 'myapp'
         unique_together = ('title', 'created_at')
-        verbose_name = 'Задача'
-        verbose_name_plural = "Задачи"
+        verbose_name = 'Task'
+        verbose_name_plural = "Tasks"
 
     def __str__(self):
         return self.title
 
 class SubTask(models.Model):
-    title = models.CharField(max_length=255, verbose_name="Название подзадачи")
-    description = models.TextField(null=True, blank=True, verbose_name="Описание")
-    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='subtasks', verbose_name="Основная задача")
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='New', verbose_name="Статус")
-    deadline = models.DateTimeField(null=True, blank=True, verbose_name="Дедлайн")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    objects = models.Manager()
+    title = models.CharField(max_length=255, verbose_name="Subtask Title")
+    description = models.TextField(null=True, blank=True, verbose_name="Description")
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='subtasks', verbose_name="Main Task")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='New', verbose_name="Status")
+    deadline = models.DateTimeField(null=True, blank=True, verbose_name="Deadline")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
 
     class Meta:
-        verbose_name = "Подзадача"
-        verbose_name_plural = "Подзадачи"
+        app_label = 'myapp'
+        verbose_name = "Subtask"
+        verbose_name_plural = "Subtasks"
 
     def __str__(self):
         return self.title
