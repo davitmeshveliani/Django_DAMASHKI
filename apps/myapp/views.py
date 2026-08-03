@@ -1,40 +1,60 @@
-from rest_framework import viewsets, status
+from django.db.models import Count, Q
+from django.utils import timezone
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.utils import timezone
-from apps.myapp.models import Category, Task, SubTask
-from apps.serializers import CategorySerializer, TaskSerializer, SubTaskSerializer
+from apps.myapp.models import Category, SubTask, Task
+from apps.serializers import (
+    CategorySerializer,
+    SubTaskSerializer,
+    TaskSerializer,
+)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
+  queryset = Category.objects.all()
+  serializer_class = CategorySerializer
 
 
 class TaskViewSet(viewsets.ModelViewSet):
-    queryset = Task.objects.all()
-    serializer_class = TaskSerializer
+  queryset = Task.objects.all()
+  serializer_class = TaskSerializer
 
-    @action(detail=False, methods=['get'])
-    def stats(self, request):
-        total_tasks = Task.objects.count()
+  @action(detail=False, methods=['get'])
+  def stats(self, request):
+    now = timezone.now()
 
-        status_counts = {}
-        for status_choice in Task.objects.values_list('status', flat=True).distinct():
-            if status_choice:
-                status_counts[status_choice] = Task.objects.filter(status=status_choice).count()
+    # 1. (aggregate)
 
-        now = timezone.now()
-        overdue_tasks = Task.objects.filter(deadline__lt=now).exclude(status='Done').count()
+    stats_data = Task.objects.aggregate(
+        total_tasks=Count('id'),
+        overdue_tasks=Count(
+            'id', filter=Q(deadline__lt=now) & ~Q(status='Done')
+        ),
+    )
 
-        data = {
-            'total_tasks': total_tasks,
-            'status_counts': status_counts,
-            'overdue_tasks': overdue_tasks
-        }
-        return Response(data, status=status.HTTP_200_OK)
+    # 2. (annotate / Group By status)
+
+    status_counts_queryset = (
+        Task.objects.values('status')
+        .annotate(count=Count('id'))
+        .order_by('status')
+    )
+
+    status_counts = {
+        item['status']: item['count']
+        for item in status_counts_queryset
+        if item['status']
+    }
+
+    data = {
+        'total_tasks': stats_data['total_tasks'],
+        'status_counts': status_counts,
+        'overdue_tasks': stats_data['overdue_tasks'],
+    }
+    return Response(data, status=status.HTTP_200_OK)
 
 
 class SubTaskViewSet(viewsets.ModelViewSet):
-    queryset = SubTask.objects.all()
-    serializer_class = SubTaskSerializer
+  queryset = SubTask.objects.all()
+  serializer_class = SubTaskSerializer

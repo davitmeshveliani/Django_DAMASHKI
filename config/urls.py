@@ -22,7 +22,7 @@ def home_view(request):
     return HttpResponse("WELCOME DJANGO")
 
 urlpatterns = [
-    path('',home_view),
+    path('', home_view),
     path('admin/', admin.site.urls),
     path('api/', include('apps.book.urls')),
     path('api/myapp/', include('apps.myapp.urls')),
