@@ -1,15 +1,15 @@
 from django.db.models import Count, Q
 from django.utils import timezone
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from apps.myapp.models import Category, SubTask, Task
-from apps.serializers import (
+from apps.serializers.my_app_model_serializers import (
     CategorySerializer,
     SubTaskSerializer,
+    SubTaskCreateSerializer,
     TaskSerializer,
 )
-
 
 class CategoryViewSet(viewsets.ModelViewSet):
   queryset = Category.objects.all()
@@ -24,16 +24,12 @@ class TaskViewSet(viewsets.ModelViewSet):
   def stats(self, request):
     now = timezone.now()
 
-    # 1. (aggregate)
-
     stats_data = Task.objects.aggregate(
         total_tasks=Count('id'),
         overdue_tasks=Count(
             'id', filter=Q(deadline__lt=now) & ~Q(status='Done')
         ),
     )
-
-    # 2. (annotate / Group By status)
 
     status_counts_queryset = (
         Task.objects.values('status')
@@ -58,3 +54,12 @@ class TaskViewSet(viewsets.ModelViewSet):
 class SubTaskViewSet(viewsets.ModelViewSet):
   queryset = SubTask.objects.all()
   serializer_class = SubTaskSerializer
+
+class SubTaskListCreateView(generics.ListCreateAPIView):
+  queryset = SubTask.objects.all()
+  serializer_class = SubTaskCreateSerializer
+
+
+class SubTaskDetailUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+  queryset = SubTask.objects.all()
+  serializer_class = SubTaskCreateSerializer

@@ -18,6 +18,7 @@ class CommonStatus(models.TextChoices):
 
 
 class BookAuthor(TimeStampedModel):
+    objects = models.Manager()
     name = models.CharField(max_length=100, verbose_name="Author Name")
     bio = models.TextField(blank=True, null=True, verbose_name="Biography")
 
@@ -31,6 +32,7 @@ class BookAuthor(TimeStampedModel):
 
 
 class BookCategory(TimeStampedModel):
+    objects = models.Manager()
     name = models.CharField(max_length=100, unique=True, verbose_name="Category Name")
 
     class Meta:
@@ -92,6 +94,7 @@ class BookTask(TimeStampedModel):
 
 
 class BookSubTask(TimeStampedModel):
+
     task = models.ForeignKey(BookTask, on_delete=models.SET_NULL, null=True, blank=True, related_name='book_subtasks')
     title = models.CharField(max_length=100, blank=True, default="", verbose_name="Task Title")
     description = models.TextField(blank=True, null=True)

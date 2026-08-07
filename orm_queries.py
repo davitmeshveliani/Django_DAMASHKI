@@ -6,10 +6,8 @@ from django.utils import timezone
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
-
 from apps.myapp.models import Task as TaskMy, SubTask as SubTaskMy
-from apps.book.models import Task as TaskBook, SubTask as SubTaskBook, Category
-
+from apps.book.models import BookTask as TaskBook, BookSubTask as SubTaskBook, BookCategory as Category
 
 def create_records():
 

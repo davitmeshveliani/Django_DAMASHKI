@@ -1,12 +1,9 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from apps.myapp.views import CategoryViewSet, TaskViewSet, SubTaskViewSet
-
-router = DefaultRouter()
-router.register(r'categories', CategoryViewSet, basename='category')
-router.register(r'tasks', TaskViewSet, basename='task')
-router.register(r'subtasks', SubTaskViewSet, basename='subtask')
+from django.urls import path
+from apps.myapp.views.task_views import TaskListCreateView, TaskDetailView
+#from apps.myapp.views.stats_views import TaskStatsView
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('tasks/', TaskListCreateView.as_view(), name='task-list-create'),
+#    path('tasks/stats/', TaskStatsView.as_view(), name='task-stats'),
+    path('tasks/<int:pk>/', TaskDetailView.as_view(), name='task-detail'),
 ]
