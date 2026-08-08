@@ -55,8 +55,6 @@ class TaskDetailView(APIView):
 
 
 
-
-
 #       generics  avtomatisirt
 
 

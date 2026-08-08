@@ -10,7 +10,33 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 
-# Задание 2: CategoryCreateSerializer с проверкой уникальности названия
+class SubTaskSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubTask
+        fields = ['id', 'title', 'description', 'task', 'status', 'deadline', 'created_at']
+
+
+class TaskSerializer(serializers.ModelSerializer):
+    categories = CategorySerializer(many=True, read_only=True)
+    subtasks = SubTaskSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Task
+        fields = ['id', 'title', 'description', 'categories', 'subtasks', 'status', 'deadline', 'created_at']
+
+
+class SubTaskCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubTask
+        fields = ['id', 'title', 'description', 'task', 'status', 'deadline', 'created_at']
+        read_only_fields = ['created_at']
+
+    def validate_deadline(self, value):
+        if value and value < timezone.now():
+            raise ValidationError('Дата дедлайна не может быть в прошлом.')
+        return value
+
+
 class CategoryCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
@@ -27,48 +53,3 @@ class CategoryCreateSerializer(serializers.ModelSerializer):
         if name and name != instance.name and Category.objects.filter(name=name).exists():
             raise ValidationError({'name': 'Категория с таким названием уже существует.'})
         return super().update(instance, validated_data)
-
-
-class SubTaskSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SubTask
-        fields = ['id', 'title', 'description', 'task', 'status', 'deadline', 'created_at']
-
-
-# Задание 1: SubTaskCreateSerializer (created_at только для чтения)
-class SubTaskCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SubTask
-        fields = ['id', 'title', 'description', 'task', 'status', 'deadline', 'created_at']
-        read_only_fields = ['created_at']
-
-
-# Задание 3: TaskDetailSerializer с вложенными подзадачами
-class TaskDetailSerializer(serializers.ModelSerializer):
-    categories = CategorySerializer(many=True, read_only=True)
-    subtasks = SubTaskSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Task
-        fields = ['id', 'title', 'description', 'categories', 'subtasks', 'status', 'deadline', 'created_at']
-
-
-# Задание 4: TaskCreateSerializer с валидацией дедлайна
-class TaskCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Task
-        fields = ['id', 'title', 'description', 'status', 'deadline']
-
-    def validate_deadline(self, value):
-        if value < timezone.now():
-            raise ValidationError('Дата дедлайна не может быть в прошлом.')
-        return value
-
-
-class TaskSerializer(serializers.ModelSerializer):
-    categories = CategorySerializer(many=True, read_only=True)
-    subtasks = SubTaskSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Task
-        fields = ['id', 'title', 'description', 'categories', 'subtasks', 'status', 'deadline', 'created_at']
