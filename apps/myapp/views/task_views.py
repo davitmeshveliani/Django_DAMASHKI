@@ -2,12 +2,19 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
 from apps.myapp.models import Task
 from apps.serializers.my_app_model_serializers import (
     TaskSerializer,
     TaskCreateSerializer,
     TaskDetailSerializer,
 )
+
+
+class TaskPagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = 'page_size'
+    max_page_size = 5
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 1. აქტიური კოდი: APIView (მანუალური მიდგომა)
@@ -16,8 +23,16 @@ from apps.serializers.my_app_model_serializers import (
 class TaskListCreateView(APIView):
     def get(self, request):
         tasks = Task.objects.all()
+        day_param = request.query_params.get('day', None)
+        if day_param:
+            days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+            day_lower = day_param.strip().lower()
+            if day_lower in days:
+                tasks = tasks.filter(deadline__week_day=days.index(day_lower) + 1)
         serializer = TaskSerializer(tasks, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 
     def post(self, request):
         serializer = TaskCreateSerializer(data=request.data)
