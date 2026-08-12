@@ -3,6 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
+from rest_framework import generics, filters
+from django_filters.rest_framework import DjangoFilterBackend
 from apps.myapp.models import Task
 from apps.serializers.my_app_model_serializers import (
     TaskSerializer,
@@ -17,7 +19,7 @@ class TaskPagination(PageNumberPagination):
     max_page_size = 5
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 1. აქტიური კოდი: APIView (მანუალური მიდგომა)
+# 1. : APIView
 # /~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class TaskListCreateView(APIView):
@@ -71,15 +73,22 @@ class TaskDetailView(APIView):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 2. დაკომენტარებული ალტერნატივა: GENERICS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# from rest_framework import generics
-#
+
 # class TaskListCreateView(generics.ListCreateAPIView):
-#     queryset = Task.objects.all()
+#     queryset = Task.objects.all().order_by('-created_at')
+#     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+#
+#     filterset_fields = ['status', 'deadline']
+#     search_fields = ['title', 'description']
+#
+#     ordering_fields = ['created_at']
+#     ordering = ['-created_at']
 #
 #     def get_serializer_class(self):
 #         if self.request.method == 'POST':
 #             return TaskCreateSerializer
 #         return TaskSerializer
+#
 #
 # class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
 #     queryset = Task.objects.all()
@@ -88,6 +97,7 @@ class TaskDetailView(APIView):
 #         if self.request.method in ['PUT', 'PATCH']:
 #             return TaskCreateSerializer
 #         return TaskDetailSerializer
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 3. დაკომენტარებული ალტერნატივა: VIEWSET

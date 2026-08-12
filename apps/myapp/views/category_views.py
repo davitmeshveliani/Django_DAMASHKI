@@ -2,15 +2,17 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from rest_framework import generics, filters
+from django_filters.rest_framework import DjangoFilterBackend
 from apps.myapp.models import Category
 from apps.myapp.serialisers.home_serializers import CategoryCreateSerializer
 from apps.serializers.my_app_model_serializers import (
     CategorySerializer,
 )
 
-# ==========================================
-# 1. აქტიური კოდი: APIView (მანუალური მიდგომა)
-# ==========================================
+# ##########################
+# 1. : APIView
+##############################
 
 class CategoryListCreateView(APIView):
     def get(self, request):
@@ -53,7 +55,30 @@ class CategoryDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# 2. დაკომენტარებული ალტერნატივა: GENERICS
+# 2. : GENERICS
+#
+# class CategoryListCreateView(generics.ListCreateAPIView):
+#     queryset = Category.objects.all().order_by('-id')
+#     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+#
+#     # სურვილისამებრ შეგიძლია დაამატო ძებნა და სორტირება
+#     search_fields = ['name']
+#     ordering_fields = ['id', 'name']
+#
+#     def get_serializer_class(self):
+#         if self.request.method == 'POST':
+#             return CategoryCreateSerializer
+#         return CategorySerializer
+#
+#
+# class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Category.objects.all()
+#
+#     def get_serializer_class(self):
+#         if self.request.method in ['PUT', 'PATCH']:
+#             return CategoryCreateSerializer
+#         return CategorySerializer
+
 
 # from rest_framework import generics
 #

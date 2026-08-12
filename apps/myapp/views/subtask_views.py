@@ -1,6 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import generics, filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
 from apps.myapp.models import SubTask
@@ -64,10 +66,17 @@ class SubTaskDetailUpdateDeleteView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 # 2: GENERICS
-# from rest_framework import generics
+
+
 #
 # class SubTaskListCreateView(generics.ListCreateAPIView):
 #     pagination_class = SubTaskPagination
+#     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+#
+#     filterset_fields = ['status', 'task']
+#     search_fields = ['title', 'description']
+#     ordering_fields = ['id', 'deadline']
+#     ordering = ['-id']
 #
 #     def get_queryset(self):
 #         queryset = SubTask.objects.all().select_related('task').order_by('-id')
@@ -86,6 +95,7 @@ class SubTaskDetailUpdateDeleteView(APIView):
 #             return SubTaskCreateSerializer
 #         return SubTaskSerializer
 #
+#
 # class SubTaskDetailUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
 #     queryset = SubTask.objects.all().select_related('task')
 #
@@ -93,7 +103,6 @@ class SubTaskDetailUpdateDeleteView(APIView):
 #         if self.request.method in ['PUT', 'PATCH']:
 #             return SubTaskCreateSerializer
 #         return SubTaskSerializer
-
 
 # 3.: VIEWSET
 # from rest_framework import viewsets
