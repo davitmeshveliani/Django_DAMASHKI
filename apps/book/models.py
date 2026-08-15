@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 
 
@@ -18,6 +19,7 @@ class CommonStatus(models.TextChoices):
 
 
 class BookAuthor(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     objects = models.Manager()
     name = models.CharField(max_length=100, verbose_name="Author Name")
     bio = models.TextField(blank=True, null=True, verbose_name="Biography")
@@ -29,7 +31,6 @@ class BookAuthor(TimeStampedModel):
 
     def __str__(self):
         return self.name
-
 
 class BookCategory(TimeStampedModel):
     objects = models.Manager()
@@ -71,6 +72,7 @@ class Book(TimeStampedModel):
 
 
 class BookTask(TimeStampedModel):
+    objects = models.Manager()
     title = models.CharField(max_length=100, blank=True, default="", verbose_name="Task Title")
     category = models.ForeignKey(BookCategory, on_delete=models.CASCADE, related_name='book_tasks')
     description = models.TextField(blank=True, null=True)
@@ -94,7 +96,7 @@ class BookTask(TimeStampedModel):
 
 
 class BookSubTask(TimeStampedModel):
-
+    objects = models.Manager()
     task = models.ForeignKey(BookTask, on_delete=models.SET_NULL, null=True, blank=True, related_name='book_subtasks')
     title = models.CharField(max_length=100, blank=True, default="", verbose_name="Task Title")
     description = models.TextField(blank=True, null=True)
