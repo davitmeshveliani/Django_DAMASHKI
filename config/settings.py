@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
 
+    'apps.my_view_set_app.apps.MyViewSetAppConfig',
     'apps.myapp.apps.MyappConfig',
     'apps.book.apps.BookConfig',
 ]
