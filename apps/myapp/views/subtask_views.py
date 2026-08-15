@@ -19,12 +19,11 @@ class SubTaskListCreateView(APIView):
     def get(self, request):
         subtasks = SubTask.objects.all().select_related('task').order_by('-id')
 
-        # მე-3 დავალების ფილტრაცია
         task_name_param = request.query_params.get('task_name', None)
         status_param = request.query_params.get('status', None)
 
         if task_name_param:
-            subtasks = subtasks.filter(task__name__icontains=task_name_param)
+            subtasks = subtasks.filter(task__title__icontains=task_name_param)
         if status_param:
             subtasks = subtasks.filter(status=status_param)
 

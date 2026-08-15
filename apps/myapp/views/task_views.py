@@ -21,18 +21,22 @@ class TaskPagination(PageNumberPagination):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 1. : APIView
 # /~~~~~~~~~~~~~~~~~~~~~~~~~
-
 class TaskListCreateView(APIView):
     def get(self, request):
-        tasks = Task.objects.all()
+        tasks = Task.objects.all().order_by('-created_at')
+
         day_param = request.query_params.get('day', None)
         if day_param:
             days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
             day_lower = day_param.strip().lower()
             if day_lower in days:
                 tasks = tasks.filter(deadline__week_day=days.index(day_lower) + 1)
-        serializer = TaskSerializer(tasks, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        paginator = TaskPagination()
+        paginated_tasks = paginator.paginate_queryset(tasks, request, view=self)
+
+        serializer = TaskSerializer(paginated_tasks, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 
 
@@ -42,6 +46,7 @@ class TaskListCreateView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class TaskDetailView(APIView):
     def get(self, request, pk):
