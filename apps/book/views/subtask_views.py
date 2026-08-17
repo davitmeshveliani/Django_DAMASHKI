@@ -11,8 +11,15 @@ from apps.serializers.my_book_model_serializers import (
 )
 
 
+class CustomPagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
 class BookTaskListCreateAPIView(generics.ListCreateAPIView):
-    pagination_class = PageNumberPagination
+    serializer_class = BookTaskSerializer
+    pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['status', 'deadline']
     search_fields = ['title', 'description']
@@ -37,7 +44,7 @@ class BookTaskDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
 class BookSubTaskListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = BookSubTaskSerializer
-    pagination_class = PageNumberPagination
+    pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['status', 'deadline']
     search_fields = ['title', 'description']
@@ -58,7 +65,7 @@ class BookSubTaskDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 class BookAuthorListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = BookAuthorSerializer
     queryset = BookAuthor.objects.all()
-    pagination_class = PageNumberPagination
+    pagination_class = CustomPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'bio']
     ordering_fields = ['created_at', 'name']

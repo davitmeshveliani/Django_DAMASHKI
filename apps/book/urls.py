@@ -5,10 +5,11 @@ from apps.book.views.book_viewset_views import (
     BookTaskListCreateAPIView,
     BookTaskDetailAPIView,
     BookSubTaskListCreateAPIView,
-    BookSubTaskDetailAPIView,
+    BookSubTaskDetailAPIView,)
+from apps.book.views.category_views import (BookCategoryListCreateAPIView,
+                                            BookCategoryDetailAPIView)
 
-)
-from apps.book.views.category_views import BookCategoryListCreateAPIView
+
 
 urlpatterns = [
     path('book-authors/', BookAuthorListCreateAPIView.as_view(), name='book-author-list'),
@@ -21,4 +22,5 @@ urlpatterns = [
     path('book-subtasks/<int:pk>/', BookSubTaskDetailAPIView.as_view(), name='book-subtask-detail'),
 
     path('categories/', BookCategoryListCreateAPIView.as_view(), name='category-list-create'),
+    path('categories/<int:pk>/', BookCategoryDetailAPIView.as_view(), name='category-detail'),
 ]

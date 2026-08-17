@@ -1,15 +1,23 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.pagination import CursorPagination
 from .models import Category, Task, Subtask
 from .serializers import CategorySerializer, TaskSerializer, SubtaskSerializer
 
 
+
+class AppCursorPagination(CursorPagination):
+    page_size = 4
+    ordering = '-id'
+
+
 class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
+    pagination_class = AppCursorPagination
 
     def get_queryset(self):
-        return Category.objects.all().prefetch_related('tasks__subtasks')
+        return Category.objects.all().prefetch_related('tasks__subtasks').order_by('-id')
 
     def perform_destroy(self, instance):
         instance.delete()
@@ -30,9 +38,10 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
+    pagination_class = AppCursorPagination
 
     def get_queryset(self):
-        return Task.objects.all().select_related('category').prefetch_related('subtasks')
+        return Task.objects.all().select_related('category').prefetch_related('subtasks').order_by('-id')
 
     def perform_destroy(self, instance):
         instance.delete()
@@ -40,9 +49,10 @@ class TaskViewSet(viewsets.ModelViewSet):
 
 class SubtaskViewSet(viewsets.ModelViewSet):
     serializer_class = SubtaskSerializer
+    pagination_class = AppCursorPagination
 
     def get_queryset(self):
-        return Subtask.objects.all().select_related('task')
+        return Subtask.objects.all().select_related('task').order_by('-id')
 
     def perform_destroy(self, instance):
         instance.delete()

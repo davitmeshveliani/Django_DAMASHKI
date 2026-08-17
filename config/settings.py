@@ -118,10 +118,114 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 
+#        «Это для меня»
+
+import sys
+import codecs
+
+# ვქმნით ლოგების შესანახ ფოლდერს პროექტის ძირეულ დირექტორიაში
+LOGS_DIR = BASE_DIR / 'logs'
+os.makedirs(LOGS_DIR, exist_ok=True)
+
+LOGGING = {
+    'version': 1,  # ლოგირების კონფიგურაციის სტანდარტული ვერსია (Django-ს მოثხოვნა)
+    'disable_existing_loggers': False,  # ინარჩუნებს სხვა არსებულ ლოგერებს (არ თიშავს მათ ავტომატურად)
+
+    # FORMATTERS: აყალიბებს ტექსტის სტრუქტურას (როგორ გამოიყურებოდეს ჩაწერილი ლოგი)
+    'formatters': {
+        'verbose': {  # დეტალური ფორმატი (აჩვენებს თარიღს, დონეს, სახელს და შეტყობინებას)
+            'format': '[{asctime}] {levelname} {name} {message}',
+            'style': '{',
+        },
+        'simple': {  # მარტივი ფორმატი (მხოლოდ დონე და ტექსტი)
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+
+    # HANDLERS: განსაზღვრავს სად და რა პირობებით უნდა გაიგზავნოს ლოგები
+    'handlers': {
+        # 1. სერვერის ლოგების კონსოლში გამომტანი ჰენდლერი (გასწორებული UTF-8 ენქოდინგით)
+        'console': {
+            'level': 'INFO',  # იჭერს INFO და უფრო მაღალი დონის შეტყობინებებს
+            'class': 'logging.StreamHandler',  # უშვებს ლოგებს ტერმინალში/კონსოლში
+            'stream': codecs.getwriter('utf-8')(sys.stdout.buffer),  # აძალებს კონსოლს გამოიყენოს UTF-8
+            'formatter': 'simple',  # იყენებს მარტივ ფორმატს
+        },
+        # 2. HTTP მოთხოვნების ფაილში ჩასაწერი ჰენდლერი (RotatingFileHandler-ით)
+        'http_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',  # იცავს ფაილს უსასრულო ზრდისგან
+            'filename': LOGS_DIR / 'http_logs.log',  # ფაილის გზა და სახელი
+            'formatter': 'verbose',  # იყენებს დეტალურ ფორმატს
+            'maxBytes': 1024 * 1024 * 1,  # მაქსიმალური ზომა: 5 მეგაბაიტი
+            'backupCount': 3,  # ინახავს მაქსიმუმ 3 ძველ სარეზერვო ფაილს
+            'encoding': 'utf-8',
+        },
+        # 3. ბაზის (SQL) მოთხოვნების ფაილში ჩასაწერი ჰენდლერი (RotatingFileHandler-ით)
+        'db_file': {
+            'level': 'DEBUG',  # იჭერს ყველაზე დეტალურ (SQL) ლოგებს
+            'class': 'logging.handlers.RotatingFileHandler',  # იცავს ფაილს უსასრულო ზრდისგან
+            'filename': LOGS_DIR / 'db_logs.log',  # ფაილის გზა და სახელი
+            'formatter': 'verbose',  # იყენებს დეტალურ ფორმატს
+            'maxBytes': 1024 * 1024 * 1,  # მაქსიმალური ზომა: 1 მეგაბაიტი
+            'backupCount': 3,  # ინახავს მაქსიმუმ 3 ძველ სარეზერვო ფაილს
+            'encoding': 'utf-8',
+        },
+    },
+
+    # LOGGERS: აკავშირებს Django-ს შიდა მოდულებს ზემოთ შექმნილ ჰენდლერებთან
+    'loggers': {
+        # სერვერის მუშაობის პროცესი
+        'django.server': {
+            'handlers': ['console'],  # აგზავნის მხოლოდ კონსოლში
+            'level': 'INFO',
+            'propagate': False,
+        },
+        # HTTP მოთხოვნები და მათი პასუხები/სტატუსები
+        'django.request': {
+            'handlers': ['http_file', 'console'],  # აგზავნის ფაილშიც (`http_logs.log`) და კონსოლშიც
+            'level': 'INFO',
+            'propagate': False,
+        },
+        # დამატებითი არხი უსაფრთხოებისა და სხვა HTTP შემომავალი ტრაფიკისთვის
+        'django.security': {
+            'handlers': ['http_file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        # ბაზის მონაცემთა (SQL) მოთხოვნები
+        'django.db.backends': {
+            'handlers': ['db_file', 'console'],  # დავამატე კონსოლიც, რომ SQL ლოგებიც უპრობლემოდ იბეჭდოს
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
+
+
+
 
 REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+
+
+# 1. CursorPagination (ამჟამად აქტიური):
+    # იყენებს დაშიფრულ კურსორს და არის წარმოუდგენლად სწრაფი დიდი მონაცემთა ბაზებისთვის.
+#     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.CursorPagination',
+
+# 2. PageNumberPagination:
+    # მუშაობს კლასიკური გვერდების ნომრებით (მაგალითად: ?page=2).
+# 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+
+# 3. LimitOffsetPagination:
+    # მუშაობს ლიმიტით და საწყისი წერტილით (მაგალითად: ?limit=5&offset=5).
+# 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+#     'PAGE_SIZE': 6,
 }
+
+
+
 
 
 # Internationalization

@@ -1,10 +1,9 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.pagination import PageNumberPagination
-from rest_framework import generics, filters
-from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from apps.myapp.models import Task
 from apps.serializers.my_app_model_serializers import (
     TaskSerializer,
@@ -13,10 +12,11 @@ from apps.serializers.my_app_model_serializers import (
 )
 
 
-class TaskPagination(PageNumberPagination):
-    page_size = 5
-    page_size_query_param = 'page_size'
-    max_page_size = 5
+class TaskLimitOffsetPagination(LimitOffsetPagination):
+    default_limit = 5
+    limit_query_param = 'limit'
+    offset_query_param = 'offset'
+    max_limit = 50
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 1. : APIView
@@ -32,7 +32,7 @@ class TaskListCreateView(APIView):
             if day_lower in days:
                 tasks = tasks.filter(deadline__week_day=days.index(day_lower) + 1)
 
-        paginator = TaskPagination()
+        paginator = TaskLimitOffsetPagination()
         paginated_tasks = paginator.paginate_queryset(tasks, request, view=self)
 
         serializer = TaskSerializer(paginated_tasks, many=True)
@@ -75,46 +75,3 @@ class TaskDetailView(APIView):
         task.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 2. დაკომენტარებული ალტერნატივა: GENERICS
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# class TaskListCreateView(generics.ListCreateAPIView):
-#     queryset = Task.objects.all().order_by('-created_at')
-#     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-#
-#     filterset_fields = ['status', 'deadline']
-#     search_fields = ['title', 'description']
-#
-#     ordering_fields = ['created_at']
-#     ordering = ['-created_at']
-#
-#     def get_serializer_class(self):
-#         if self.request.method == 'POST':
-#             return TaskCreateSerializer
-#         return TaskSerializer
-#
-#
-# class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = Task.objects.all()
-#
-#     def get_serializer_class(self):
-#         if self.request.method in ['PUT', 'PATCH']:
-#             return TaskCreateSerializer
-#         return TaskDetailSerializer
-
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 3. დაკომენტარებული ალტერნატივა: VIEWSET
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# from rest_framework import viewsets
-#
-# class TaskViewSet(viewsets.ModelViewSet):
-#     queryset = Task.objects.all()
-#
-#     def get_serializer_class(self):
-#         if self.request.method == 'POST':
-#             return TaskCreateSerializer
-#         elif self.request.method in ['PUT', 'PATCH']:
-#             return TaskCreateSerializer
-#         return TaskDetailSerializer

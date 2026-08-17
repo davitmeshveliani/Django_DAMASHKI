@@ -19,6 +19,7 @@ class CustomPagination(PageNumberPagination):
 
 
 class BookTaskListCreateAPIView(generics.ListCreateAPIView):
+    serializer_class = BookTaskSerializer
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['status', 'deadline']
@@ -80,8 +81,3 @@ class BookAuthorListCreateAPIView(generics.ListCreateAPIView):
 class BookAuthorDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = BookAuthorSerializer
     queryset = BookAuthor.objects.all()
-
-
-class BookSubTaskCreateAPIView(generics.CreateAPIView):
-    serializer_class = BookSubTaskSerializer
-    queryset = BookSubTask.objects.all()
